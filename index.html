@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Timeline Calculator | USA Triathlon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #003B5C;
+            --bright-blue: #00A3E0;
+            --red: #E4002B;
+            --white: #FFFFFF;
+            --light-gray: #F5F7FA;
+            --medium-gray: #E1E5EB;
+            --dark-gray: #2D3748;
+            --text-gray: #4A5568;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header Banner */
+        .header {
+            background: linear-gradient(135deg, var(--navy) 0%, #002740 100%);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 59, 92, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(0, 163, 224, 0.1) 100%);
+            pointer-events: none;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--red) 0%, var(--red) 33%, var(--white) 33%, var(--white) 66%, var(--bright-blue) 66%, var(--bright-blue) 100%);
+        }
+
+        .logo-container {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-container img {
+            height: 60px;
+            width: auto;
+        }
+
+        .header-content {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--white);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .header p {
+            color: var(--bright-blue);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Instructions Panel */
+        .instructions {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--bright-blue);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .instructions h3 {
+            font-family: 'Oswald', sans-serif;
+            color: var(--navy);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.75rem;
+        }
+
+        .instructions p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+        }
+
+        /* Grid Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Input Panel */
+        .input-panel {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: var(--navy);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .panel-header svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--bright-blue);
+        }
+
+        .panel-content {
+            padding: 1.5rem;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--medium-gray);
+        }
+
+        .section-header:first-child {
+            margin-top: 0;
+        }
+
+        .section-header h4 {
+            font-family: 'Oswald', sans-serif;
+            color: var(--navy);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .section-icon.swim { background: var(--bright-blue); color: white; }
+        .section-icon.bike { background: var(--red); color: white; }
+        .section-icon.run { background: var(--navy); color: white; }
+        .section-icon.race { background: #28A745; color: white; }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border: 2px solid var(--medium-gray);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: 'Source Sans Pro', sans-serif;
+            transition: all 0.2s ease;
+            background: var(--white);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--bright-blue);
+            box-shadow: 0 0 0 3px rgba(0, 163, 224, 0.15);
+        }
+
+        .input-hint {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            margin-top: 0.25rem;
+        }
+
+        /* Checkpoint Builder */
+        .checkpoint-builder {
+            background: var(--light-gray);
+            border: 1px dashed var(--medium-gray);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .checkpoint-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .checkpoint-item {
+            display: grid;
+            grid-template-columns: 1fr 70px 110px 36px;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .checkpoint-item input {
+            padding: 0.45rem 0.6rem;
+            font-size: 0.88rem;
+        }
+
+        .checkpoint-remove {
+            background: var(--red);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            font-size: 1.1rem;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+            padding: 0;
+        }
+
+        .checkpoint-remove:hover {
+            background: #c4001f;
+        }
+
+        .checkpoint-add {
+            width: 100%;
+            background: var(--bright-blue);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            padding: 0.55rem;
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .checkpoint-add:hover {
+            background: #008bc4;
+        }
+
+        .checkpoint-builder .builder-labels {
+            display: grid;
+            grid-template-columns: 1fr 70px 110px 36px;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .checkpoint-builder .builder-labels span {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-gray);
+        }
+
+        .checkpoint-empty {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            font-style: italic;
+            padding: 0.5rem 0;
+        }
+
+        /* Calculate Button */
+        .calculate-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--red) 0%, #c4001f 100%);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 15px rgba(228, 0, 43, 0.3);
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(228, 0, 43, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Results Panel */
+        .results-panel {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .results-header {
+            background: var(--navy);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-header h3 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .print-btn {
+            background: var(--bright-blue);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .print-btn:hover {
+            background: #008bc4;
+        }
+
+        .print-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .results-content {
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        /* Timeline Tables */
+        .timeline-section {
+            margin-bottom: 2rem;
+        }
+
+        .timeline-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .timeline-title h4 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .timeline-title.swim h4 { color: var(--bright-blue); }
+        .timeline-title.bike h4 { color: var(--red); }
+        .timeline-title.run h4 { color: var(--navy); }
+
+        .timeline-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .timeline-badge.swim { background: rgba(0, 163, 224, 0.15); color: var(--bright-blue); }
+        .timeline-badge.bike { background: rgba(228, 0, 43, 0.15); color: var(--red); }
+        .timeline-badge.run { background: rgba(0, 59, 92, 0.15); color: var(--navy); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            background: var(--navy);
+            color: var(--white);
+        }
+
+        thead th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-family: 'Oswald', sans-serif;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-size: 0.8rem;
+        }
+
+        thead th:first-child {
+            border-radius: 6px 0 0 0;
+        }
+
+        thead th:last-child {
+            border-radius: 0 6px 0 0;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--medium-gray);
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--light-gray);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody td {
+            padding: 0.75rem 1rem;
+        }
+
+        .checkpoint-name {
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .checkpoint-dist {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            font-weight: 400;
+            display: block;
+        }
+
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-top: 0.3rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--bright-blue);
+            text-decoration: none;
+            border: 1px solid var(--bright-blue);
+            border-radius: 4px;
+            padding: 0.15rem 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background: var(--bright-blue);
+            color: var(--white);
+        }
+
+        .nav-link svg {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+
+        .time-fast { color: #28A745; font-weight: 600; }
+        .time-median { color: var(--bright-blue); font-weight: 600; }
+        .time-slow { color: var(--red); font-weight: 600; }
+
+        .elapsed-note {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            font-weight: 400;
+            display: block;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-gray);
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1.5rem;
+            fill: var(--medium-gray);
+        }
+
+        .empty-state h4 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.2rem;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, var(--light-gray) 0%, var(--white) 100%);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--medium-gray);
+        }
+
+        .summary-card h5 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-gray);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .summary-card .value {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .summary-card.fast .value { color: #28A745; }
+        .summary-card.median .value { color: var(--bright-blue); }
+        .summary-card.slow .value { color: var(--red); }
+
+        /* ===== Volunteer Briefing Sheets ===== */
+        .briefing-sheets {
+            margin-top: 2.5rem;
+            border-top: 3px solid var(--navy);
+            padding-top: 1.5rem;
+        }
+
+        .briefing-header-note {
+            background: rgba(0, 163, 224, 0.08);
+            border-left: 4px solid var(--bright-blue);
+            border-radius: 6px;
+            padding: 0.9rem 1.1rem;
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .briefing-header-note strong {
+            font-family: 'Oswald', sans-serif;
+            color: var(--navy);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .briefing-sheet {
+            border: 1px solid var(--medium-gray);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .briefing-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            border-bottom: 2px solid var(--medium-gray);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .briefing-leg {
+            display: inline-block;
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--white);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            margin-bottom: 0.4rem;
+        }
+        .briefing-leg.bike { background: var(--red); }
+        .briefing-leg.run { background: var(--navy); }
+
+        .briefing-titleblock h2 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.6rem;
+            color: var(--navy);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            line-height: 1.1;
+        }
+
+        .briefing-loc {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            margin-top: 0.2rem;
+        }
+
+        .briefing-qr {
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .briefing-qr img {
+            width: 110px;
+            height: 110px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 6px;
+        }
+
+        .briefing-qr span {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-gray);
+            margin-top: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .briefing-map {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--medium-gray);
+            margin-bottom: 1rem;
+            background: var(--light-gray);
+        }
+
+        .briefing-map img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .briefing-map .map-fallback {
+            display: none;
+            padding: 2rem 1rem;
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        .briefing-map.map-failed img { display: none; }
+        .briefing-map.map-failed .map-fallback { display: block; }
+
+        .briefing-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-block {
+            background: var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .info-block h4 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+        }
+
+        .gps-coords {
+            font-family: monospace;
+            font-size: 1.05rem;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .briefing-link {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--bright-blue);
+            text-decoration: none;
+        }
+        .briefing-link:hover { text-decoration: underline; }
+
+        .briefing-times {
+            width: 100%;
+            font-size: 0.9rem;
+        }
+        .briefing-times td {
+            padding: 0.3rem 0;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        .briefing-times tr:last-child td { border-bottom: none; }
+        .briefing-times td:last-child {
+            text-align: right;
+            font-weight: 700;
+            font-family: 'Oswald', sans-serif;
+        }
+
+        .briefing-notes h4 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+        }
+
+        .notes-lines {
+            min-height: 90px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            background-image: repeating-linear-gradient(
+                transparent,
+                transparent 28px,
+                var(--medium-gray) 28px,
+                var(--medium-gray) 29px
+            );
+        }
+
+        .briefing-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            margin-top: 1rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--medium-gray);
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .header {
+                background: var(--navy) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .input-panel {
+                display: none;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 0;
+            }
+
+            .results-panel {
+                box-shadow: none;
+            }
+
+            .print-btn {
+                display: none;
+            }
+
+            .results-content {
+                max-height: none;
+            }
+
+            thead {
+                background: var(--navy) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Each briefing sheet on its own page */
+            .briefing-sheets {
+                border-top: none;
+                margin-top: 0;
+                padding-top: 0;
+            }
+
+            .briefing-header-note {
+                display: none;
+            }
+
+            .briefing-sheet {
+                page-break-before: always;
+                break-before: page;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .briefing-leg,
+            .briefing-times td:last-child,
+            .info-block {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                padding: 1.25rem;
+            }
+
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            thead th, tbody td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <!-- USA Triathlon Events Logo -->
+            <img src="https://raw.githubusercontent.com/JustinTrolle/USAT-Images/69b6aab23b4b83a5a48a695384609d41462aac46/USA_Triathlon_Events_Logo_Transparent.png" alt="USA Triathlon Events Logo">
+        </div>
+        <div class="header-content">
+            <h1>Course Timeline Calculator</h1>
+            <p>Project athlete arrival times at course checkpoints</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="instructions">
+            <h3>How to Use This Calculator</h3>
+            <p>Enter your race start times, course distances, and expected pace ranges. Add named checkpoints at specific distances from the start of the bike and run legs to see exactly when the fastest, median, and slowest athletes will reach each one. Use this for planning road closures, staff scheduling, and safety resource deployment.</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="input-panel">
+                <div class="panel-header">
+                    <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+                    Race Configuration
+                </div>
+                <div class="panel-content">
+                    <!-- Race Start Section -->
+                    <div class="section-header">
+                        <div class="section-icon race">🏁</div>
+                        <h4>Race Start</h4>
+                    </div>
+                    <div class="form-group">
+                        <label>First Wave Start Time</label>
+                        <input type="time" id="firstWaveStart" value="06:50">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Wave Start Time</label>
+                        <input type="time" id="lastWaveStart" value="07:22">
+                    </div>
+                    <div class="form-group">
+                        <label>Transition Time (minutes)</label>
+                        <input type="number" id="transitionTime" value="2" min="0" max="10">
+                        <div class="input-hint">Average time athletes spend in transition</div>
+                    </div>
+
+                    <!-- Swim Section -->
+                    <div class="section-header">
+                        <div class="section-icon swim">🏊</div>
+                        <h4>Swim</h4>
+                    </div>
+                    <div class="form-group">
+                        <label>Swim Distance</label>
+                        <div class="form-row">
+                            <input type="number" id="swimDistance" value="1500" min="0" step="100">
+                            <select id="swimUnit">
+                                <option value="meters">Meters</option>
+                                <option value="yards">Yards</option>
+                                <option value="miles">Miles</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Swim Pace (per 100m/yd)</label>
+                        <div class="form-row-3">
+                            <div>
+                                <input type="text" id="swimFast" value="1:12" placeholder="Fast">
+                                <div class="input-hint">Fast</div>
+                            </div>
+                            <div>
+                                <input type="text" id="swimMedian" value="2:20" placeholder="Median">
+                                <div class="input-hint">Median</div>
+                            </div>
+                            <div>
+                                <input type="text" id="swimSlow" value="4:00" placeholder="Slow">
+                                <div class="input-hint">Slow</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bike Section -->
+                    <div class="section-header">
+                        <div class="section-icon bike">🚴</div>
+                        <h4>Bike</h4>
+                    </div>
+                    <div class="form-group">
+                        <label>Bike Distance</label>
+                        <div class="form-row">
+                            <input type="number" id="bikeDistance" value="40" min="0" step="0.5">
+                            <select id="bikeUnit">
+                                <option value="km">Kilometers</option>
+                                <option value="miles">Miles</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Bike Checkpoints</label>
+                        <div class="checkpoint-builder">
+                            <div class="builder-labels">
+                                <span>Checkpoint Label</span>
+                                <span>Distance</span>
+                                <span>GPS (lat, long)</span>
+                                <span></span>
+                            </div>
+                            <div class="checkpoint-list" id="bikeCheckpointList"></div>
+                            <button type="button" class="checkpoint-add" onclick="addCheckpoint('bike')">+ Add Bike Checkpoint</button>
+                        </div>
+                        <div class="input-hint">Distance is measured from the start of the bike leg, in the bike distance unit selected above. GPS is optional — paste coordinates as "lat, long" (e.g. 39.7392, -104.9903) to add a Google Maps navigation link.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Bike Speed (MPH)</label>
+                        <div class="form-row-3">
+                            <div>
+                                <input type="number" id="bikeFast" value="25" min="5" max="40" step="0.5">
+                                <div class="input-hint">Fast</div>
+                            </div>
+                            <div>
+                                <input type="number" id="bikeMedian" value="19.5" min="5" max="40" step="0.5">
+                                <div class="input-hint">Median</div>
+                            </div>
+                            <div>
+                                <input type="number" id="bikeSlow" value="12" min="5" max="40" step="0.5">
+                                <div class="input-hint">Slow</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Run Section -->
+                    <div class="section-header">
+                        <div class="section-icon run">🏃</div>
+                        <h4>Run</h4>
+                    </div>
+                    <div class="form-group">
+                        <label>Run Distance</label>
+                        <div class="form-row">
+                            <input type="number" id="runDistance" value="10" min="0" step="0.5">
+                            <select id="runUnit">
+                                <option value="km">Kilometers</option>
+                                <option value="miles">Miles</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Run Checkpoints</label>
+                        <div class="checkpoint-builder">
+                            <div class="builder-labels">
+                                <span>Checkpoint Label</span>
+                                <span>Distance</span>
+                                <span>GPS (lat, long)</span>
+                                <span></span>
+                            </div>
+                            <div class="checkpoint-list" id="runCheckpointList"></div>
+                            <button type="button" class="checkpoint-add" onclick="addCheckpoint('run')">+ Add Run Checkpoint</button>
+                        </div>
+                        <div class="input-hint">Distance is measured from the start of the run leg, in the run distance unit selected above. GPS is optional — paste coordinates as "lat, long" (e.g. 39.7392, -104.9903) to add a Google Maps navigation link.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Run Pace (min/mile)</label>
+                        <div class="form-row-3">
+                            <div>
+                                <input type="text" id="runFast" value="6:00" placeholder="Fast">
+                                <div class="input-hint">Fast</div>
+                            </div>
+                            <div>
+                                <input type="text" id="runMedian" value="10:00" placeholder="Median">
+                                <div class="input-hint">Median</div>
+                            </div>
+                            <div>
+                                <input type="text" id="runSlow" value="18:00" placeholder="Slow">
+                                <div class="input-hint">Slow</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="calculate-btn" onclick="calculateTimeline()">
+                        Generate Timeline
+                    </button>
+                </div>
+            </div>
+
+            <div class="results-panel">
+                <div class="results-header">
+                    <h3>Course Timeline Results</h3>
+                    <button class="print-btn" onclick="window.print()">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                        Print
+                    </button>
+                </div>
+                <div class="results-content" id="resultsContent">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        <h4>Enter Race Details</h4>
+                        <p>Configure your race parameters and click "Generate Timeline" to see projected checkpoint times.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---- Checkpoint builder state ----
+        function addCheckpoint(leg, label, distance, gps) {
+            const list = document.getElementById(leg + 'CheckpointList');
+            const empty = list.querySelector('.checkpoint-empty');
+            if (empty) empty.remove();
+
+            const row = document.createElement('div');
+            row.className = 'checkpoint-item';
+            row.innerHTML = `
+                <input type="text" class="cp-label" placeholder="e.g. Aid Station 1" value="${label || ''}">
+                <input type="number" class="cp-distance" placeholder="0" min="0" step="0.1" value="${distance != null ? distance : ''}">
+                <input type="text" class="cp-gps" placeholder="lat, long" value="${gps || ''}">
+                <button type="button" class="checkpoint-remove" title="Remove" onclick="removeCheckpoint(this, '${leg}')">&times;</button>
+            `;
+            list.appendChild(row);
+        }
+
+        function removeCheckpoint(btn, leg) {
+            btn.closest('.checkpoint-item').remove();
+            const list = document.getElementById(leg + 'CheckpointList');
+            if (list.children.length === 0) {
+                list.innerHTML = '<div class="checkpoint-empty">No checkpoints added yet.</div>';
+            }
+        }
+
+        // Read checkpoints for a leg, sorted by distance
+        function getCheckpoints(leg) {
+            const list = document.getElementById(leg + 'CheckpointList');
+            const items = list.querySelectorAll('.checkpoint-item');
+            const result = [];
+            items.forEach((item, idx) => {
+                const labelInput = item.querySelector('.cp-label');
+                const distInput = item.querySelector('.cp-distance');
+                const gpsInput = item.querySelector('.cp-gps');
+                const distance = parseFloat(distInput.value);
+                if (!isNaN(distance)) {
+                    const label = labelInput.value.trim() || `Checkpoint ${idx + 1}`;
+                    const gps = parseGps(gpsInput ? gpsInput.value : '');
+                    result.push({ label, distance, gps });
+                }
+            });
+            result.sort((a, b) => a.distance - b.distance);
+            return result;
+        }
+
+        // Parse a "lat, long" string into a clean "lat,long" or return null
+        function parseGps(raw) {
+            if (!raw) return null;
+            // Accept comma or whitespace separators; strip extra spaces
+            const parts = raw.trim().split(/[\s,]+/).map(p => parseFloat(p));
+            if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                const lat = parts[0];
+                const lng = parts[1];
+                if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                    return `${lat},${lng}`;
+                }
+            }
+            return null;
+        }
+
+        // Build a Google Maps directions link to a coordinate
+        function navLink(gps) {
+            if (!gps) return '';
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(gps)}`;
+            return `<a class="nav-link" href="${url}" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
+                        Navigate
+                    </a>`;
+        }
+
+        // Static map image URL (OpenStreetMap, no API key) with a marker at the point
+        function staticMapUrl(gps) {
+            const [lat, lng] = gps.split(',');
+            // staticmap.openstreetmap.de renders a PNG with a red marker, no key required
+            return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=600x400&maptype=mapnik&markers=${lat},${lng},red-pushpin`;
+        }
+
+        // QR code image URL pointing to Google Maps directions for the point
+        function qrUrl(gps) {
+            const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(gps)}`;
+            return `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(dirUrl)}`;
+        }
+
+        // Build the printable volunteer briefing sheets (one page per GPS-tagged checkpoint)
+        function buildBriefingSheets(briefings, raceLabel) {
+            if (!briefings.length) return '';
+
+            let sheets = `
+                <div class="briefing-header-note">
+                    <strong>Volunteer Briefing Sheets</strong> — one page per location below.
+                    These appear only when you print. Hand one to the volunteer assigned to each checkpoint.
+                </div>
+            `;
+
+            briefings.forEach((b, i) => {
+                const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(b.gps)}`;
+                sheets += `
+                    <div class="briefing-sheet">
+                        <div class="briefing-top">
+                            <div class="briefing-titleblock">
+                                <span class="briefing-leg ${b.legClass}">${b.leg} Course</span>
+                                <h2>${b.label}</h2>
+                                <p class="briefing-loc">${b.distance} ${b.unit} into the ${b.leg.toLowerCase()} leg</p>
+                            </div>
+                            <div class="briefing-qr">
+                                <img src="${qrUrl(b.gps)}" alt="QR code to navigate to ${b.label}">
+                                <span>Scan to navigate</span>
+                            </div>
+                        </div>
+
+                        <div class="briefing-map">
+                            <img src="${staticMapUrl(b.gps)}" alt="Map of ${b.label}" onerror="this.parentElement.classList.add('map-failed');">
+                            <div class="map-fallback">Map preview unavailable — use the GPS coordinates or QR code below.</div>
+                        </div>
+
+                        <div class="briefing-info">
+                            <div class="info-block">
+                                <h4>GPS Coordinates</h4>
+                                <p class="gps-coords">${b.gps}</p>
+                                <a href="${dirUrl}" class="briefing-link">Open in Google Maps</a>
+                            </div>
+                            <div class="info-block">
+                                <h4>Expected Athlete Window</h4>
+                                <table class="briefing-times">
+                                    <tr><td>First athletes (fastest)</td><td class="time-fast">${b.firstArrival}</td></tr>
+                                    <tr><td>Bulk of field (median)</td><td class="time-median">${b.medianArrival}</td></tr>
+                                    <tr><td>Last athletes (slowest)</td><td class="time-slow">${b.lastArrival}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="briefing-notes">
+                            <h4>Notes / Assignment</h4>
+                            <div class="notes-lines"></div>
+                        </div>
+
+                        <div class="briefing-footer">
+                            <span>${raceLabel}</span>
+                            <span>Location ${i + 1} of ${briefings.length}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            return `<div class="briefing-sheets">${sheets}</div>`;
+        }
+
+        // Parse time string (MM:SS) to minutes
+        function parseTimeToMinutes(timeStr) {
+            const parts = timeStr.split(':');
+            if (parts.length === 2) {
+                return parseInt(parts[0]) + parseInt(parts[1]) / 60;
+            }
+            return parseFloat(timeStr) || 0;
+        }
+
+        // Parse HH:MM time to Date object
+        function parseStartTime(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            const date = new Date();
+            date.setHours(hours, minutes, 0, 0);
+            return date;
+        }
+
+        // Format Date to HH:MM AM/PM
+        function formatTime(date) {
+            return date.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        // Format a duration in minutes to "Xh Ym" / "Ym"
+        function formatDuration(mins) {
+            const hours = Math.floor(mins / 60);
+            const minutes = Math.round(mins % 60);
+            return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+        }
+
+        // Add minutes to a Date
+        function addMinutes(date, minutes) {
+            return new Date(date.getTime() + minutes * 60000);
+        }
+
+        // Calculate swim time in minutes
+        function calculateSwimTime(distance, unit, pace100) {
+            let distanceIn100s;
+            if (unit === 'meters') {
+                distanceIn100s = distance / 100;
+            } else if (unit === 'yards') {
+                distanceIn100s = distance / 100;
+            } else { // miles
+                distanceIn100s = (distance * 1609.34) / 100;
+            }
+            return distanceIn100s * parseTimeToMinutes(pace100);
+        }
+
+        // Calculate bike time in minutes
+        function calculateBikeTime(distance, unit, speedMph) {
+            let distanceMiles = unit === 'km' ? distance * 0.621371 : distance;
+            return (distanceMiles / speedMph) * 60;
+        }
+
+        // Calculate run time in minutes
+        function calculateRunTime(distance, unit, pacePerMile) {
+            let distanceMiles = unit === 'km' ? distance * 0.621371 : distance;
+            return distanceMiles * parseTimeToMinutes(pacePerMile);
+        }
+
+        // Main calculation function
+        function calculateTimeline() {
+            // Get inputs
+            const firstWaveStart = parseStartTime(document.getElementById('firstWaveStart').value);
+            const lastWaveStart = parseStartTime(document.getElementById('lastWaveStart').value);
+            const transitionTime = parseFloat(document.getElementById('transitionTime').value) || 2;
+
+            // Swim inputs
+            const swimDistance = parseFloat(document.getElementById('swimDistance').value);
+            const swimUnit = document.getElementById('swimUnit').value;
+            const swimFast = document.getElementById('swimFast').value;
+            const swimMedian = document.getElementById('swimMedian').value;
+            const swimSlow = document.getElementById('swimSlow').value;
+
+            // Bike inputs
+            const bikeDistance = parseFloat(document.getElementById('bikeDistance').value);
+            const bikeUnit = document.getElementById('bikeUnit').value;
+            const bikeFast = parseFloat(document.getElementById('bikeFast').value);
+            const bikeMedian = parseFloat(document.getElementById('bikeMedian').value);
+            const bikeSlow = parseFloat(document.getElementById('bikeSlow').value);
+            const bikeCheckpoints = getCheckpoints('bike');
+
+            // Run inputs
+            const runDistance = parseFloat(document.getElementById('runDistance').value);
+            const runUnit = document.getElementById('runUnit').value;
+            const runFast = document.getElementById('runFast').value;
+            const runMedian = document.getElementById('runMedian').value;
+            const runSlow = document.getElementById('runSlow').value;
+            const runCheckpoints = getCheckpoints('run');
+
+            // Calculate swim times
+            const swimTimeFast = calculateSwimTime(swimDistance, swimUnit, swimFast);
+            const swimTimeMedian = calculateSwimTime(swimDistance, swimUnit, swimMedian);
+            const swimTimeSlow = calculateSwimTime(swimDistance, swimUnit, swimSlow);
+
+            // Calculate full-leg bike times
+            const bikeTimeFast = calculateBikeTime(bikeDistance, bikeUnit, bikeFast);
+            const bikeTimeMedian = calculateBikeTime(bikeDistance, bikeUnit, bikeMedian);
+            const bikeTimeSlow = calculateBikeTime(bikeDistance, bikeUnit, bikeSlow);
+
+            // Calculate full-leg run times
+            const runTimeFast = calculateRunTime(runDistance, runUnit, runFast);
+            const runTimeMedian = calculateRunTime(runDistance, runUnit, runMedian);
+            const runTimeSlow = calculateRunTime(runDistance, runUnit, runSlow);
+
+            // Build results HTML
+            let html = '';
+
+            // Summary cards
+            const totalFast = swimTimeFast + bikeTimeFast + runTimeFast + (transitionTime * 2);
+            const totalMedian = swimTimeMedian + bikeTimeMedian + runTimeMedian + (transitionTime * 2);
+            const totalSlow = swimTimeSlow + bikeTimeSlow + runTimeSlow + (transitionTime * 2);
+
+            html += `
+                <div class="summary-cards">
+                    <div class="summary-card fast">
+                        <h5>Fastest Finish</h5>
+                        <div class="value">${formatTime(addMinutes(firstWaveStart, totalFast))}</div>
+                        <small>${formatDuration(totalFast)} total</small>
+                    </div>
+                    <div class="summary-card median">
+                        <h5>Median Finish</h5>
+                        <div class="value">${formatTime(addMinutes(firstWaveStart, totalMedian))}</div>
+                        <small>${formatDuration(totalMedian)} total</small>
+                    </div>
+                    <div class="summary-card slow">
+                        <h5>Last Finish</h5>
+                        <div class="value">${formatTime(addMinutes(lastWaveStart, totalSlow))}</div>
+                        <small>${formatDuration(totalSlow)} total</small>
+                    </div>
+                </div>
+            `;
+
+            // ---- Swim timeline ----
+            html += `
+                <div class="timeline-section">
+                    <div class="timeline-title swim">
+                        <span class="timeline-badge swim">Swim</span>
+                        <h4>Swim - ${swimDistance} ${swimUnit}</h4>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Checkpoint</th>
+                                <th>Fastest</th>
+                                <th>Median</th>
+                                <th>Slowest</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="checkpoint-name">First Wave In</td>
+                                <td class="time-fast">${formatTime(addMinutes(firstWaveStart, swimTimeFast))}</td>
+                                <td class="time-median">${formatTime(addMinutes(firstWaveStart, swimTimeMedian))}</td>
+                                <td class="time-slow">${formatTime(addMinutes(firstWaveStart, swimTimeSlow))}</td>
+                            </tr>
+                            <tr>
+                                <td class="checkpoint-name">Last Wave In</td>
+                                <td class="time-fast">${formatTime(addMinutes(lastWaveStart, swimTimeFast))}</td>
+                                <td class="time-median">${formatTime(addMinutes(lastWaveStart, swimTimeMedian))}</td>
+                                <td class="time-slow">${formatTime(addMinutes(lastWaveStart, swimTimeSlow))}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // ---- Bike timeline ----
+            const t1Fast = addMinutes(firstWaveStart, swimTimeFast + transitionTime);
+            const t1Median = addMinutes(firstWaveStart, swimTimeMedian + transitionTime);
+            const t1Slow = addMinutes(lastWaveStart, swimTimeSlow + transitionTime);
+
+            // Collect data for printable volunteer briefing sheets (GPS-tagged only)
+            const briefings = [];
+
+            let bikeRows = `
+                <tr>
+                    <td class="checkpoint-name">Transition (T1) — Bike Start<span class="checkpoint-dist">0 ${bikeUnit} into bike</span></td>
+                    <td class="time-fast">${formatTime(t1Fast)}</td>
+                    <td class="time-median">${formatTime(t1Median)}</td>
+                    <td class="time-slow">${formatTime(t1Slow)}</td>
+                </tr>
+            `;
+
+            bikeCheckpoints.forEach(cp => {
+                // Clamp distance to the leg length
+                const dist = Math.min(cp.distance, bikeDistance);
+                const fraction = bikeDistance > 0 ? dist / bikeDistance : 0;
+
+                const elapsedFast = bikeTimeFast * fraction;
+                const elapsedMedian = bikeTimeMedian * fraction;
+                const elapsedSlow = bikeTimeSlow * fraction;
+
+                const checkpointFast = addMinutes(t1Fast, elapsedFast);
+                const checkpointMedian = addMinutes(t1Median, elapsedMedian);
+                const checkpointSlow = addMinutes(t1Slow, elapsedSlow);
+
+                if (cp.gps) {
+                    briefings.push({
+                        label: cp.label,
+                        leg: 'Bike',
+                        legClass: 'bike',
+                        distance: cp.distance,
+                        unit: bikeUnit,
+                        gps: cp.gps,
+                        firstArrival: formatTime(checkpointFast),
+                        medianArrival: formatTime(checkpointMedian),
+                        lastArrival: formatTime(checkpointSlow)
+                    });
+                }
+
+                bikeRows += `
+                    <tr>
+                        <td class="checkpoint-name">${cp.label}<span class="checkpoint-dist">${cp.distance} ${bikeUnit} into bike</span>${navLink(cp.gps)}</td>
+                        <td class="time-fast">${formatTime(checkpointFast)}<span class="elapsed-note">+${formatDuration(elapsedFast)} on bike</span></td>
+                        <td class="time-median">${formatTime(checkpointMedian)}<span class="elapsed-note">+${formatDuration(elapsedMedian)} on bike</span></td>
+                        <td class="time-slow">${formatTime(checkpointSlow)}<span class="elapsed-note">+${formatDuration(elapsedSlow)} on bike</span></td>
+                    </tr>
+                `;
+            });
+
+            // Bike finish / dismount
+            bikeRows += `
+                <tr style="background: rgba(228, 0, 43, 0.06);">
+                    <td class="checkpoint-name" style="font-weight:700;">Bike Finish (Dismount)<span class="checkpoint-dist">${bikeDistance} ${bikeUnit} into bike</span></td>
+                    <td class="time-fast">${formatTime(addMinutes(t1Fast, bikeTimeFast))}</td>
+                    <td class="time-median">${formatTime(addMinutes(t1Median, bikeTimeMedian))}</td>
+                    <td class="time-slow">${formatTime(addMinutes(t1Slow, bikeTimeSlow))}</td>
+                </tr>
+            `;
+
+            html += `
+                <div class="timeline-section">
+                    <div class="timeline-title bike">
+                        <span class="timeline-badge bike">Bike</span>
+                        <h4>Bike - ${bikeDistance} ${bikeUnit}</h4>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Checkpoint</th>
+                                <th>Fastest (${bikeFast} mph)</th>
+                                <th>Median (${bikeMedian} mph)</th>
+                                <th>Slowest (${bikeSlow} mph)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${bikeRows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // ---- Run timeline ----
+            const t2Fast = addMinutes(t1Fast, bikeTimeFast + transitionTime);
+            const t2Median = addMinutes(t1Median, bikeTimeMedian + transitionTime);
+            const t2Slow = addMinutes(t1Slow, bikeTimeSlow + transitionTime);
+
+            let runRows = `
+                <tr>
+                    <td class="checkpoint-name">Transition (T2) — Run Start<span class="checkpoint-dist">0 ${runUnit} into run</span></td>
+                    <td class="time-fast">${formatTime(t2Fast)}</td>
+                    <td class="time-median">${formatTime(t2Median)}</td>
+                    <td class="time-slow">${formatTime(t2Slow)}</td>
+                </tr>
+            `;
+
+            runCheckpoints.forEach(cp => {
+                const dist = Math.min(cp.distance, runDistance);
+                const fraction = runDistance > 0 ? dist / runDistance : 0;
+
+                const elapsedFast = runTimeFast * fraction;
+                const elapsedMedian = runTimeMedian * fraction;
+                const elapsedSlow = runTimeSlow * fraction;
+
+                const checkpointFast = addMinutes(t2Fast, elapsedFast);
+                const checkpointMedian = addMinutes(t2Median, elapsedMedian);
+                const checkpointSlow = addMinutes(t2Slow, elapsedSlow);
+
+                if (cp.gps) {
+                    briefings.push({
+                        label: cp.label,
+                        leg: 'Run',
+                        legClass: 'run',
+                        distance: cp.distance,
+                        unit: runUnit,
+                        gps: cp.gps,
+                        firstArrival: formatTime(checkpointFast),
+                        medianArrival: formatTime(checkpointMedian),
+                        lastArrival: formatTime(checkpointSlow)
+                    });
+                }
+
+                runRows += `
+                    <tr>
+                        <td class="checkpoint-name">${cp.label}<span class="checkpoint-dist">${cp.distance} ${runUnit} into run</span>${navLink(cp.gps)}</td>
+                        <td class="time-fast">${formatTime(checkpointFast)}<span class="elapsed-note">+${formatDuration(elapsedFast)} on run</span></td>
+                        <td class="time-median">${formatTime(checkpointMedian)}<span class="elapsed-note">+${formatDuration(elapsedMedian)} on run</span></td>
+                        <td class="time-slow">${formatTime(checkpointSlow)}<span class="elapsed-note">+${formatDuration(elapsedSlow)} on run</span></td>
+                    </tr>
+                `;
+            });
+
+            // Finish
+            runRows += `
+                <tr style="background: rgba(40, 167, 69, 0.1);">
+                    <td class="checkpoint-name" style="font-weight: 700;">🏆 FINISH<span class="checkpoint-dist">${runDistance} ${runUnit} into run</span></td>
+                    <td class="time-fast" style="font-size: 1.1em;">${formatTime(addMinutes(t2Fast, runTimeFast))}</td>
+                    <td class="time-median" style="font-size: 1.1em;">${formatTime(addMinutes(t2Median, runTimeMedian))}</td>
+                    <td class="time-slow" style="font-size: 1.1em;">${formatTime(addMinutes(t2Slow, runTimeSlow))}</td>
+                </tr>
+            `;
+
+            html += `
+                <div class="timeline-section">
+                    <div class="timeline-title run">
+                        <span class="timeline-badge run">Run</span>
+                        <h4>Run - ${runDistance} ${runUnit}</h4>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Checkpoint</th>
+                                <th>Fastest (${runFast}/mi)</th>
+                                <th>Median (${runMedian}/mi)</th>
+                                <th>Slowest (${runSlow}/mi)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${runRows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Append printable volunteer briefing sheets (GPS-tagged checkpoints only)
+            const raceLabel = 'USA Triathlon — Course Timeline';
+            html += buildBriefingSheets(briefings, raceLabel);
+
+            document.getElementById('resultsContent').innerHTML = html;
+        }
+
+        // Seed default checkpoints and calculate on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // A couple of sensible default bike checkpoints (miles) with example GPS
+            addCheckpoint('bike', 'Aid Station 1', 10, '38.8339, -104.8214');
+            addCheckpoint('bike', 'Turnaround', 20, '38.8500, -104.8000');
+            addCheckpoint('bike', 'Aid Station 2', 30, '');
+
+            // A couple of default run checkpoints (miles)
+            addCheckpoint('run', 'Aid Station 1', 2, '38.8339, -104.8214');
+            addCheckpoint('run', 'Turnaround', 5, '');
+            addCheckpoint('run', 'Aid Station 2', 8, '');
+
+            calculateTimeline();
+        });
+    </script>
+</body>
+</html>
