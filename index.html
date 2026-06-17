@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Timeline Calculator | USA Triathlon</title>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
         :root {
             --navy: #003B5C;
@@ -272,6 +274,16 @@
         }
 
         .checkpoint-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            padding: 0.6rem;
+            background: var(--white);
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+        }
+
+        .checkpoint-row-main {
             display: grid;
             grid-template-columns: 1fr 70px 110px 36px;
             gap: 0.5rem;
@@ -281,6 +293,27 @@
         .checkpoint-item input {
             padding: 0.45rem 0.6rem;
             font-size: 0.88rem;
+        }
+
+        .checkpoint-item .cp-notes {
+            width: 100%;
+            padding: 0.45rem 0.6rem;
+            font-size: 0.82rem;
+            font-family: 'Source Sans Pro', sans-serif;
+            border: 2px solid var(--medium-gray);
+            border-radius: 6px;
+            resize: vertical;
+            min-height: 48px;
+            line-height: 1.4;
+            color: var(--dark-gray);
+            background: var(--light-gray);
+        }
+
+        .checkpoint-item .cp-notes:focus {
+            outline: none;
+            border-color: var(--bright-blue);
+            box-shadow: 0 0 0 3px rgba(0, 163, 224, 0.15);
+            background: var(--white);
         }
 
         .checkpoint-remove {
@@ -726,6 +759,13 @@
             display: block;
         }
 
+        .briefing-map .leaflet-map {
+            width: 100%;
+            height: 320px;
+        }
+
+        .briefing-map.map-failed .leaflet-map { display: none; }
+
         .briefing-map .map-fallback {
             display: none;
             padding: 2rem 1rem;
@@ -798,8 +838,19 @@
             margin-bottom: 0.5rem;
         }
 
+        .notes-content {
+            font-size: 0.95rem;
+            color: var(--dark-gray);
+            background: rgba(0, 163, 224, 0.06);
+            border-left: 3px solid var(--bright-blue);
+            border-radius: 0 6px 6px 0;
+            padding: 0.7rem 0.9rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
         .notes-lines {
-            min-height: 90px;
+            min-height: 70px;
             border: 1px solid var(--medium-gray);
             border-radius: 8px;
             background-image: repeating-linear-gradient(
@@ -886,9 +937,19 @@
 
             .briefing-leg,
             .briefing-times td:last-child,
-            .info-block {
+            .info-block,
+            .notes-content {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+
+            /* Keep map a sensible printed height and show tiles */
+            .briefing-map .leaflet-map {
+                height: 260px;
+            }
+            .leaflet-control-zoom,
+            .leaflet-control-attribution {
+                display: none !important;
             }
         }
 
@@ -1031,7 +1092,7 @@
                             <div class="checkpoint-list" id="bikeCheckpointList"></div>
                             <button type="button" class="checkpoint-add" onclick="addCheckpoint('bike')">+ Add Bike Checkpoint</button>
                         </div>
-                        <div class="input-hint">Distance is measured from the start of the bike leg, in the bike distance unit selected above. GPS is optional — paste coordinates as "lat, long" (e.g. 39.7392, -104.9903) to add a Google Maps navigation link.</div>
+                        <div class="input-hint">Distance is measured from the start of the bike leg, in the bike distance unit selected above. GPS is optional — paste coordinates as "lat, long" (e.g. 39.7392, -104.9903) to add a map and navigation link. Notes you add appear on that location's printable briefing sheet.</div>
                     </div>
                     <div class="form-group">
                         <label>Bike Speed (MPH)</label>
@@ -1078,7 +1139,7 @@
                             <div class="checkpoint-list" id="runCheckpointList"></div>
                             <button type="button" class="checkpoint-add" onclick="addCheckpoint('run')">+ Add Run Checkpoint</button>
                         </div>
-                        <div class="input-hint">Distance is measured from the start of the run leg, in the run distance unit selected above. GPS is optional — paste coordinates as "lat, long" (e.g. 39.7392, -104.9903) to add a Google Maps navigation link.</div>
+                        <div class="input-hint">Distance is measured from the start of the run leg, in the run distance unit selected above. GPS is optional — paste coordinates as "lat, long" (e.g. 39.7392, -104.9903) to add a map and navigation link. Notes you add appear on that location's printable briefing sheet.</div>
                     </div>
                     <div class="form-group">
                         <label>Run Pace (min/mile)</label>
@@ -1125,7 +1186,7 @@
 
     <script>
         // ---- Checkpoint builder state ----
-        function addCheckpoint(leg, label, distance, gps) {
+        function addCheckpoint(leg, label, distance, gps, notes) {
             const list = document.getElementById(leg + 'CheckpointList');
             const empty = list.querySelector('.checkpoint-empty');
             if (empty) empty.remove();
@@ -1133,10 +1194,13 @@
             const row = document.createElement('div');
             row.className = 'checkpoint-item';
             row.innerHTML = `
-                <input type="text" class="cp-label" placeholder="e.g. Aid Station 1" value="${label || ''}">
-                <input type="number" class="cp-distance" placeholder="0" min="0" step="0.1" value="${distance != null ? distance : ''}">
-                <input type="text" class="cp-gps" placeholder="lat, long" value="${gps || ''}">
-                <button type="button" class="checkpoint-remove" title="Remove" onclick="removeCheckpoint(this, '${leg}')">&times;</button>
+                <div class="checkpoint-row-main">
+                    <input type="text" class="cp-label" placeholder="e.g. Aid Station 1" value="${label || ''}">
+                    <input type="number" class="cp-distance" placeholder="0" min="0" step="0.1" value="${distance != null ? distance : ''}">
+                    <input type="text" class="cp-gps" placeholder="lat, long" value="${gps || ''}">
+                    <button type="button" class="checkpoint-remove" title="Remove" onclick="removeCheckpoint(this, '${leg}')">&times;</button>
+                </div>
+                <textarea class="cp-notes" placeholder="Location notes for this checkpoint's volunteer (equipment, hazards, supervisor, radio channel, etc.)">${notes || ''}</textarea>
             `;
             list.appendChild(row);
         }
@@ -1158,11 +1222,13 @@
                 const labelInput = item.querySelector('.cp-label');
                 const distInput = item.querySelector('.cp-distance');
                 const gpsInput = item.querySelector('.cp-gps');
+                const notesInput = item.querySelector('.cp-notes');
                 const distance = parseFloat(distInput.value);
                 if (!isNaN(distance)) {
                     const label = labelInput.value.trim() || `Checkpoint ${idx + 1}`;
                     const gps = parseGps(gpsInput ? gpsInput.value : '');
-                    result.push({ label, distance, gps });
+                    const notes = notesInput ? notesInput.value.trim() : '';
+                    result.push({ label, distance, gps, notes });
                 }
             });
             result.sort((a, b) => a.distance - b.distance);
@@ -1194,12 +1260,10 @@
                     </a>`;
         }
 
-        // Static map image URL (OpenStreetMap, no API key) with a marker at the point
-        function staticMapUrl(gps) {
-            const [lat, lng] = gps.split(',');
-            // staticmap.openstreetmap.de renders a PNG with a red marker, no key required
-            return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=600x400&maptype=mapnik&markers=${lat},${lng},red-pushpin`;
-        }
+        // Holds pending Leaflet map initializations: {id, lat, lng, label}
+        let pendingMaps = [];
+        // Holds live Leaflet map instances so we can reflow them before printing
+        let liveMaps = [];
 
         // QR code image URL pointing to Google Maps directions for the point
         function qrUrl(gps) {
@@ -1207,9 +1271,59 @@
             return `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(dirUrl)}`;
         }
 
+        // Initialize all queued Leaflet maps (called after results HTML is in the DOM)
+        function renderPendingMaps() {
+            liveMaps = [];
+            if (typeof L === 'undefined') {
+                // Leaflet failed to load — mark map containers as failed
+                pendingMaps.forEach(m => {
+                    const el = document.getElementById(m.id);
+                    if (el) el.closest('.briefing-map').classList.add('map-failed');
+                });
+                pendingMaps = [];
+                return;
+            }
+            pendingMaps.forEach(m => {
+                const el = document.getElementById(m.id);
+                if (!el) return;
+                try {
+                    const map = L.map(el, {
+                        center: [m.lat, m.lng],
+                        zoom: 16,
+                        zoomControl: true,
+                        attributionControl: true,
+                        scrollWheelZoom: false
+                    });
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+                    L.marker([m.lat, m.lng]).addTo(map);
+                    // Ensure tiles size correctly after layout settles
+                    setTimeout(() => map.invalidateSize(), 200);
+                    liveMaps.push({ map, lat: m.lat, lng: m.lng });
+                } catch (e) {
+                    el.closest('.briefing-map').classList.add('map-failed');
+                }
+            });
+            pendingMaps = [];
+        }
+
+        // Reflow maps so tiles fill the container at print dimensions
+        function reflowMaps() {
+            liveMaps.forEach(lm => {
+                try {
+                    lm.map.invalidateSize();
+                    lm.map.setView([lm.lat, lm.lng], 16);
+                } catch (e) {}
+            });
+        }
+        window.addEventListener('beforeprint', reflowMaps);
+
         // Build the printable volunteer briefing sheets (one page per GPS-tagged checkpoint)
         function buildBriefingSheets(briefings, raceLabel) {
             if (!briefings.length) return '';
+            pendingMaps = [];
 
             let sheets = `
                 <div class="briefing-header-note">
@@ -1220,22 +1334,30 @@
 
             briefings.forEach((b, i) => {
                 const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(b.gps)}`;
+                const [lat, lng] = b.gps.split(',').map(Number);
+                const mapId = `briefingMap${i}`;
+                pendingMaps.push({ id: mapId, lat, lng, label: b.label });
+
+                const notesHtml = b.notes
+                    ? `<div class="notes-content">${escapeHtml(b.notes).replace(/\n/g, '<br>')}</div>`
+                    : '';
+
                 sheets += `
                     <div class="briefing-sheet">
                         <div class="briefing-top">
                             <div class="briefing-titleblock">
                                 <span class="briefing-leg ${b.legClass}">${b.leg} Course</span>
-                                <h2>${b.label}</h2>
+                                <h2>${escapeHtml(b.label)}</h2>
                                 <p class="briefing-loc">${b.distance} ${b.unit} into the ${b.leg.toLowerCase()} leg</p>
                             </div>
                             <div class="briefing-qr">
-                                <img src="${qrUrl(b.gps)}" alt="QR code to navigate to ${b.label}">
+                                <img src="${qrUrl(b.gps)}" alt="QR code to navigate to ${escapeHtml(b.label)}">
                                 <span>Scan to navigate</span>
                             </div>
                         </div>
 
                         <div class="briefing-map">
-                            <img src="${staticMapUrl(b.gps)}" alt="Map of ${b.label}" onerror="this.parentElement.classList.add('map-failed');">
+                            <div id="${mapId}" class="leaflet-map"></div>
                             <div class="map-fallback">Map preview unavailable — use the GPS coordinates or QR code below.</div>
                         </div>
 
@@ -1256,12 +1378,13 @@
                         </div>
 
                         <div class="briefing-notes">
-                            <h4>Notes / Assignment</h4>
+                            <h4>Location Notes</h4>
+                            ${notesHtml}
                             <div class="notes-lines"></div>
                         </div>
 
                         <div class="briefing-footer">
-                            <span>${raceLabel}</span>
+                            <span>${escapeHtml(raceLabel)}</span>
                             <span>Location ${i + 1} of ${briefings.length}</span>
                         </div>
                     </div>
@@ -1269,6 +1392,16 @@
             });
 
             return `<div class="briefing-sheets">${sheets}</div>`;
+        }
+
+        // Basic HTML escape for user-entered text
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
         }
 
         // Parse time string (MM:SS) to minutes
@@ -1479,6 +1612,7 @@
                         distance: cp.distance,
                         unit: bikeUnit,
                         gps: cp.gps,
+                        notes: cp.notes,
                         firstArrival: formatTime(checkpointFast),
                         medianArrival: formatTime(checkpointMedian),
                         lastArrival: formatTime(checkpointSlow)
@@ -1561,6 +1695,7 @@
                         distance: cp.distance,
                         unit: runUnit,
                         gps: cp.gps,
+                        notes: cp.notes,
                         firstArrival: formatTime(checkpointFast),
                         medianArrival: formatTime(checkpointMedian),
                         lastArrival: formatTime(checkpointSlow)
@@ -1614,19 +1749,22 @@
             html += buildBriefingSheets(briefings, raceLabel);
 
             document.getElementById('resultsContent').innerHTML = html;
+
+            // Initialize Leaflet maps now that their containers exist in the DOM
+            renderPendingMaps();
         }
 
         // Seed default checkpoints and calculate on load
         document.addEventListener('DOMContentLoaded', function() {
             // A couple of sensible default bike checkpoints (miles) with example GPS
-            addCheckpoint('bike', 'Aid Station 1', 10, '38.8339, -104.8214');
-            addCheckpoint('bike', 'Turnaround', 20, '38.8500, -104.8000');
-            addCheckpoint('bike', 'Aid Station 2', 30, '');
+            addCheckpoint('bike', 'Aid Station 1', 10, '38.8339, -104.8214', 'Water + electrolyte only. 2 volunteers. Radio channel 3. Park at the church lot.');
+            addCheckpoint('bike', 'Turnaround', 20, '38.8500, -104.8000', 'Cone the turnaround clearly. Marshal must watch for two-way bike traffic.');
+            addCheckpoint('bike', 'Aid Station 2', 30, '', '');
 
             // A couple of default run checkpoints (miles)
-            addCheckpoint('run', 'Aid Station 1', 2, '38.8339, -104.8214');
-            addCheckpoint('run', 'Turnaround', 5, '');
-            addCheckpoint('run', 'Aid Station 2', 8, '');
+            addCheckpoint('run', 'Aid Station 1', 2, '38.8339, -104.8214', 'Water, cola, and gels. Trash bins 50 ft past the table.');
+            addCheckpoint('run', 'Turnaround', 5, '', '');
+            addCheckpoint('run', 'Aid Station 2', 8, '', '');
 
             calculateTimeline();
         });
